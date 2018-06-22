@@ -31,3 +31,4 @@ hs_err_pid*
 /demo-services/fake-sso/.idea/
 /demo-services/fake-account-service/target/
 /demo-services/fake-account-service/.idea/
+ui2/.editorconfig

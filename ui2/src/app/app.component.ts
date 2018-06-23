@@ -17,8 +17,6 @@ export class AppComponent {
       if (!localStorage.getItem('firstTimeLoad')) {
         localStorage.setItem('firstTimeLoad', 'false');
         this._router.navigate(['/intro']);
-      } else {
-        this._router.navigate(['/']);
       }
-    }
+  }
 }

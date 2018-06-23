@@ -1,6 +1,7 @@
 /* You can add global styles to this file, and also import other style files */
 @import '~@angular/material/theming';
 @import '~@covalent/core/theming/all-theme';
+@import url('https://fonts.googleapis.com/css?family=Nunito');
 // @import '~@angular/material/prebuilt-themes/deeppurple-amber.css';
 
 @include covalent-core();
@@ -18,6 +19,7 @@ $theme: mat-light-theme($primary, $accent, $warn);
 @include covalent-theme($theme);
 
 
+
 .mat-toolbar {
     background-color: black;
     box-shadow: none;
@@ -25,4 +27,18 @@ $theme: mat-light-theme($primary, $accent, $warn);
 //override main toolbar
 .mat-toolbar.mat-primary {
     background-color: black;
+}
+
+.mat-icon.mat-icon-logo {
+    height: 45px;
+}
+
+//gatekeeper text
+.mat-toolbar span span {
+    font-family: "Nunito",sans-serif;
+    font-size: 45px;
+}
+
+td-layout-nav {
+    background-color: darkgrey
 }

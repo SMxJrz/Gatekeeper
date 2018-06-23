@@ -1,4 +1,28 @@
 /* You can add global styles to this file, and also import other style files */
 @import '~@angular/material/theming';
 @import '~@covalent/core/theming/all-theme';
-@import '~@angular/material/prebuilt-themes/deeppurple-amber.css';
+// @import '~@angular/material/prebuilt-themes/deeppurple-amber.css';
+
+@include covalent-core();
+@include covalent-utilities();
+@include covalent-layout();
+@include covalent-colors();
+
+$primary: mat-palette($mat-indigo, 900, 100, 900);
+$accent: mat-palette($mat-teal, 500, 100, 900);
+$warn: mat-palette($mat-red, 600, 100, 900);
+
+$theme: mat-light-theme($primary, $accent, $warn);
+
+@include angular-material-theme($theme);
+@include covalent-theme($theme);
+
+
+.mat-toolbar {
+    background-color: black;
+    box-shadow: none;
+}
+//override main toolbar
+.mat-toolbar.mat-primary {
+    background-color: black;
+}

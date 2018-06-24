@@ -14,6 +14,13 @@ export class AppComponent {
     private _router: Router) {
       this._iconRegistry.addSvgIconInNamespace('assets', 'gatekeeper_logo',
         this._domSanitizer.bypassSecurityTrustResourceUrl('assets/gatekeeper.svg'));
+
+      this._iconRegistry.addSvgIconInNamespace('assets', 'rds',
+        this._domSanitizer.bypassSecurityTrustResourceUrl('assets/Database_AmazonRDS.svg'));
+
+      this._iconRegistry.addSvgIconInNamespace('assets', 'ec2',
+        this._domSanitizer.bypassSecurityTrustResourceUrl('assets/Compute_AmazonEC2.svg'));
+
       if (!localStorage.getItem('firstTimeLoad')) {
         localStorage.setItem('firstTimeLoad', 'false');
         this._router.navigate(['/intro']);

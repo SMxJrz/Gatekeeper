@@ -2,23 +2,19 @@ import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NgModule } from '@angular/core';
 import { HttpClientModule } from '@angular/common/http';
-import { MatCardModule, MatToolbarModule, MatIconModule, MatButtonModule } from '@angular/material';
+import { MatCardModule, MatToolbarModule, MatIconModule, MatButtonModule, MatButtonToggleModule } from '@angular/material';
 import { CovalentLayoutModule, CovalentStepsModule } from '@covalent/core';
+import { RequestComponent } from './request.component';
 import { Observable } from 'rxjs';
-import { AppComponent } from './app.component';
-import { MainComponent } from './main/main.component';
-import { AppRoutingModule } from './app-routing.module';
-import { IntroComponent } from './intro/intro.component';
-import { RequestModule } from './main/request/request.module';
+
+import { ResourceComponent } from './resource/resource.component';
 
 @NgModule({
   declarations: [
-    AppComponent,
-    MainComponent,
-    IntroComponent
+    ResourceComponent,
+    RequestComponent
   ],
   imports: [
-    AppRoutingModule,
     BrowserModule,
     BrowserAnimationsModule,
     CovalentLayoutModule,
@@ -27,9 +23,10 @@ import { RequestModule } from './main/request/request.module';
     MatCardModule,
     MatIconModule,
     MatToolbarModule,
-    RequestModule
+    MatButtonModule,
+    MatButtonToggleModule
   ],
   providers: [],
-  bootstrap: [AppComponent]
+  bootstrap: [RequestComponent]
 })
-export class AppModule { }
+export class RequestModule { }

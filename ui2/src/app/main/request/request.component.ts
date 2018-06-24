@@ -4,7 +4,7 @@ import { IStepChangeEvent } from '@covalent/core/steps';
 @Component({
   selector: 'app-request',
   templateUrl: './request.component.html',
-  styleUrls: ['./request.component.css']
+  styleUrls: ['./request.component.scss']
 })
 export class RequestComponent implements OnInit {
 

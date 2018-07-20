@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { IStepChangeEvent } from '@covalent/core/steps';
+import { MatStepper } from '@angular/material';
 
 @Component({
   selector: 'app-request',
@@ -13,7 +13,10 @@ export class RequestComponent implements OnInit {
   ngOnInit() {
   }
 
-  stepChanged(event: IStepChangeEvent) {
-    console.info("I changed!");
+  goBack(stepper: MatStepper) {
+    stepper.previous();
+  }
+  goNext(stepper: MatStepper) {
+    stepper.next();
   }
 }

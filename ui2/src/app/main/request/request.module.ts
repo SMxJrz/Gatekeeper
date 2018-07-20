@@ -3,7 +3,8 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NgModule } from '@angular/core';
 import { HttpClientModule } from '@angular/common/http';
 import { MatCardModule, MatToolbarModule, MatIconModule, MatButtonModule, MatButtonToggleModule } from '@angular/material';
-import { CovalentLayoutModule, CovalentStepsModule } from '@covalent/core';
+import { MatStepperModule } from '@angular/material';
+import { CovalentLayoutModule } from '@covalent/core';
 import { RequestComponent } from './request.component';
 import { Observable } from 'rxjs';
 
@@ -18,7 +19,7 @@ import { ResourceComponent } from './resource/resource.component';
     BrowserModule,
     BrowserAnimationsModule,
     CovalentLayoutModule,
-    CovalentStepsModule,
+    MatStepperModule,
     HttpClientModule,
     MatCardModule,
     MatIconModule,

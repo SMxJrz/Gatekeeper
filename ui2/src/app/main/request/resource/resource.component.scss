@@ -1,0 +1,28 @@
+.cntr-btn {
+    height: 200px;
+}
+
+.mat-button-toggle-label {
+    flex: 1 1 100%;
+    box-sizing: border-box;
+    align-items: center;
+    flex-direction: row;
+    display: flex;
+
+    .mat-button-toggle-label-content {
+        text-align: center;
+        flex: 1 1 100%;
+    }
+}
+
+resource-button {
+    width: 200px !important;
+    height:200px !important;
+}
+  
+mat-icon {
+    font-size: 200px;
+    height: 200px;
+    width: 200px;
+    line-height: 200px;
+}

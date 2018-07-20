@@ -1,56 +1,58 @@
-<div layout="column" layout-align="center center">
-  <mat-card class="request-card">
-    <td-steps (stepChange)="stepChanged($event)" mode="vertical">
-      <td-step #step 
-        label="What do you need Access to?" 
-        sublabel="EC2 or RDS" 
-        active="true"
-        state="none"
-        disabled="false">
-        <ng-template td-step-actions>
-          <app-resource></app-resource>
-        </ng-template>
-      </td-step>
-      <td-step #step 
-        label="Select Users" 
-        sublabel="Who needs access?" 
-        active="false"
-        state="none"
-        disabled="false">
-        <ng-template td-step-actions>
+<div layout="column" layout-align="center center" layout-fill>
+  <mat-card class="request-card" flex="50">
+    <div class="gk-stepper-container">
+      <mat-horizontal-stepper #stepper layout-fill>
+        <mat-step #step 
+          label="What do you need Access to?" 
+          sublabel="EC2 or RDS" 
+          active="true"
+          state="none"
+          disabled="false">
+          <div layout="row">
+            <app-resource layout-fill></app-resource>
+          </div>
+        </mat-step>
+        <mat-step #step 
+          label="Select Users" 
+          sublabel="Who needs access?" 
+          active="false"
+          state="none"
+          disabled="false">
           <div>AD Search goes here</div>
-        </ng-template>
-      </td-step>
-      <td-step #step 
-        label="Select Instances" 
-        sublabel="What do you need access to?" 
-        active="false"
-        state="none"
-        disabled="false">
-        <ng-template td-step-actions>
+        </mat-step>
+        <mat-step #step 
+          label="Select Instances" 
+          sublabel="What do you need access to?" 
+          active="false"
+          state="none"
+          disabled="false">
           <div>Resource Search goes here</div>
-        </ng-template>
-      </td-step>
-      <td-step #step 
-        label="Choose Length of Time" 
-        sublabel="For how long do you need access?" 
-        active="false"
-        state="none"
-        disabled="false">
-        <ng-template td-step-actions>
+          <div>
+            <button mat-button matStepperPrevious>Back</button>
+            <button mat-button matStepperNext>Next</button>
+          </div>
+        </mat-step>
+        <mat-step #step 
+          label="Choose Length of Time" 
+          sublabel="For how long do you need access?" 
+          active="false"
+          state="none"
+          disabled="false">
           <div>Length of access goes here</div>
-        </ng-template>
-      </td-step>
-      <td-step #step 
-        label="Justification" 
-        sublabel="This request requires approval, please provide justification" 
-        active="false"
-        state="none"
-        disabled="false">
-        <ng-template td-step-actions>
-          <div>Length of access goes here</div>
-        </ng-template>
-      </td-step>
-    </td-steps>
+        </mat-step>
+        <mat-step #step 
+          label="Justification" 
+          sublabel="This request requires approval, please provide justification" 
+          active="false"
+          state="none"
+          disabled="false">
+            <div>Length of access goes here</div>
+        </mat-step>
+      </mat-horizontal-stepper>
+    </div>
+    <div layout="row" layout-align="end center" layout-padding>
+        <button color="accent" mat-raised-button (click)="goBack(stepper)">Previous</button>
+        <button color="primary" mat-raised-button (click)="goNext(stepper)">Next</button>
+    </div>    
   </mat-card>
 </div>

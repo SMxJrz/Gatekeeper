@@ -1,7 +1,13 @@
 .request-card {
     width:65%;
+    min-height:400px;
+    min-width: 700px;
 }
 
 .gk-stepper-container {
     height: 90%
+}
+
+.gk-request-step-btn {
+    margin-right: 20px;
 }

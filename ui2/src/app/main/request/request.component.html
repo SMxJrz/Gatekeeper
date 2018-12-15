@@ -1,7 +1,7 @@
-<div layout="column" layout-align="center center" layout-fill>
-  <mat-card class="request-card" flex="50">
-    <div class="gk-stepper-container">
-      <mat-horizontal-stepper #stepper layout-fill>
+<div [fxLayout]="'column'" [fxLayoutAlign]="'center center'" fxFill>
+  <mat-card class="request-card" [fxFlex]="'65%'">
+    <div class="gk-stepper-container" [fxLayout]="'row'">
+      <mat-horizontal-stepper #stepper fxFill>
         <mat-step #step 
           label="What do you need Access to?" 
           sublabel="EC2 or RDS" 
@@ -9,7 +9,7 @@
           state="none"
           disabled="false">
           <div layout="row">
-            <app-resource layout-fill></app-resource>
+            <app-resource fxFill></app-resource>
           </div>
         </mat-step>
         <mat-step #step 
@@ -18,7 +18,7 @@
           active="false"
           state="none"
           disabled="false">
-          <div>AD Search goes here</div>
+          <div layout-fill>AD Search goes here</div>
         </mat-step>
         <mat-step #step 
           label="Select Instances" 
@@ -50,9 +50,11 @@
         </mat-step>
       </mat-horizontal-stepper>
     </div>
-    <div layout="row" layout-align="end center" layout-padding>
+    <div [fxLayout]="'column'">
+      <div class="gk-request-step-btn" [fxLayout]="'row'" [fxLayoutAlign]="'end center'" [fxLayoutGap]="'5px'" >
         <button color="accent" mat-raised-button (click)="goBack(stepper)">Previous</button>
         <button color="primary" mat-raised-button (click)="goNext(stepper)">Next</button>
+      </div>
     </div>    
   </mat-card>
 </div>

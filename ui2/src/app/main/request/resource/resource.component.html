@@ -1,10 +1,12 @@
-<div layout="column" class="cntr-btn" style="height: 200px" layout-padding layout-align="center center" >
-  <mat-button-toggle-group layout-fill>
-    <mat-button-toggle flex="50">
-      <mat-icon class="resource-button" svgIcon="assets:ec2" layout-fill></mat-icon><span>EC2</span>
+<div [fxLayout]="'column'" [fxLayoutAlign]="'center center'" >
+  <mat-button-toggle-group>
+    <mat-button-toggle [fxFlex]="'50%'">
+      <mat-icon svgIcon="assets:ec2"></mat-icon>
+      <span class="gk-resource-button">EC2</span>
     </mat-button-toggle>
-    <mat-button-toggle flex="50">
-      <mat-icon svgIcon="assets:rds"></mat-icon><span>RDS</span>
+    <mat-button-toggle [fxFlex]="'50%'">
+        <mat-icon svgIcon="assets:rds"></mat-icon>
+        <span class="gk-resource-button">RDS</span>
     </mat-button-toggle>
   </mat-button-toggle-group>
 </div>

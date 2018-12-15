@@ -4,11 +4,10 @@ import { NgModule } from '@angular/core';
 import { HttpClientModule } from '@angular/common/http';
 import { MatCardModule, MatToolbarModule, MatIconModule, MatButtonModule, MatButtonToggleModule } from '@angular/material';
 import { MatStepperModule } from '@angular/material';
-import { CovalentLayoutModule } from '@covalent/core';
 import { RequestComponent } from './request.component';
-import { Observable } from 'rxjs';
 
 import { ResourceComponent } from './resource/resource.component';
+import { FlexLayoutModule } from '@angular/flex-layout';
 
 @NgModule({
   declarations: [
@@ -18,7 +17,7 @@ import { ResourceComponent } from './resource/resource.component';
   imports: [
     BrowserModule,
     BrowserAnimationsModule,
-    CovalentLayoutModule,
+    FlexLayoutModule,
     MatStepperModule,
     HttpClientModule,
     MatCardModule,

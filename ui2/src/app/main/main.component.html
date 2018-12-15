@@ -1,5 +1,11 @@
-<td-layout-nav class="bgc-blue-grey-200" logo="assets:gatekeeper_logo" toolbarTitle="Gatekeeper" navigationRoute="/">
-  <div layout-fill>
+<mat-drawer-container fxFill>
+  <mat-drawer mode="side" opened>
+    <div class="gk-cntr-sidenav" fxFill [fxLayout]="'column'" [fxLayoutAlign]="'start center'" [fxLayoutGap]="'10px'" >
+      <mat-icon class="gk-logo" svgIcon="assets:gatekeeper_logo" ></mat-icon>
+      <span>Gatekeeper</span>
+    </div>
+  </mat-drawer>
+  <mat-drawer-container fxFill>
     <router-outlet></router-outlet>
-  </div>
-</td-layout-nav>
+  </mat-drawer-container>
+</mat-drawer-container>

@@ -18,15 +18,14 @@
 package org.finra.gatekeeper.services.db.connections;
 
 import org.finra.gatekeeper.configuration.GatekeeperProperties;
-import org.finra.gatekeeper.services.accessrequest.model.RoleType;
-import org.finra.gatekeeper.services.db.exception.GKUnsupportedDBException;
-import org.finra.gatekeeper.services.db.interfaces.DBConnection;
-import org.finra.gatekeeper.services.db.model.DbUser;
+import org.finra.gatekeeper.rds.exception.GKUnsupportedDBException;
+import org.finra.gatekeeper.rds.interfaces.DBConnection;
+import org.finra.gatekeeper.rds.model.DbUser;
+import org.finra.gatekeeper.rds.model.RoleType;
 import org.postgresql.ds.PGPoolingDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.CannotGetJdbcConnectionException;
 import org.springframework.jdbc.core.*;
@@ -254,6 +253,21 @@ public class PostgresDBConnection implements DBConnection {
         } catch (Exception ex) {
             logger.error("Could not retrieve list of users for database " + address, ex);
             results = Collections.emptyList();
+        }
+        dataSource.close();
+        return results;
+    }
+
+    public List<String> getAvailableRoles(String address) throws SQLException{
+        PGPoolingDataSource dataSource = connect(address);
+        JdbcTemplate conn = new JdbcTemplate(dataSource);
+        List<String> results;
+        logger.info("Getting available roles for " + address);
+        try {
+            results = conn.queryForList("select rolname from pg_catalog.pg_roles where rolname like 'gk_%' and rolcanlogin = false", String.class);
+        } catch (Exception ex) {
+            logger.error("Could not retrieve list of roles for database " + address, ex);
+            throw ex;
         }
         dataSource.close();
         return results;

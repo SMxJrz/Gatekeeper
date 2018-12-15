@@ -20,16 +20,15 @@ package org.finra.gatekeeper.services.db.connections;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.finra.gatekeeper.configuration.GatekeeperProperties;
 import org.finra.gatekeeper.exception.GatekeeperException;
-import org.finra.gatekeeper.services.accessrequest.model.RoleType;
-import org.finra.gatekeeper.services.db.exception.GKUnsupportedDBException;
-import org.finra.gatekeeper.services.db.interfaces.DBConnection;
-import org.finra.gatekeeper.services.db.model.DbUser;
+import org.finra.gatekeeper.rds.exception.GKUnsupportedDBException;
+import org.finra.gatekeeper.rds.interfaces.DBConnection;
+import org.finra.gatekeeper.rds.model.DbUser;
+import org.finra.gatekeeper.rds.model.RoleType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.CannotGetJdbcConnectionException;
-import org.springframework.jdbc.core.CallableStatementCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.StatementCallback;
@@ -220,6 +219,10 @@ public class MySQLDBConnection implements DBConnection {
 
     public List<String> checkIfUsersHasTables(String address, List<String> users){
         return Collections.emptyList();
+    }
+
+    public List<String> getAvailableRoles(String address) throws SQLException{
+        return Arrays.asList("gk_readonly", "gk_datafix", "gk_dba");
     }
 
     private class MySqlStatement implements StatementCallback<Boolean>{

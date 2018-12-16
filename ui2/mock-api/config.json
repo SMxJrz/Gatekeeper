@@ -1,0 +1,19 @@
+{
+	"note": "Mock Gatekeeper API",
+	"mockDirectory": "C:\\Users\\steve\\Develop\\Gatekeeper\\ui2/mock-api/dataSource/",
+	"staticDirectory": "./data/",
+	"staticPath": "./data/",
+	"quiet": false,
+	"port": "8000",
+	"latency": 50,
+	"logRequestHeaders": false,
+	"webServices": {
+		"api/gatekeeper-ec2/searchAD": {
+			"mockFile": "users.json",
+			"latency": 20,
+			"verbs": [
+				"get"
+			]
+		}
+	}
+}

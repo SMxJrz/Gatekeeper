@@ -8,13 +8,11 @@ import { AppRoutingModule } from './app-routing.module';
 import { IntroComponent } from './intro/intro.component';
 import { RequestModule } from './main/request/request.module';
 import { MainModule } from './main/main.module';
-import { AdSearchComponent } from './main/ad-search/ad-search.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     IntroComponent,
-    AdSearchComponent
   ],
   imports: [
     AppRoutingModule,

@@ -1,0 +1,6 @@
+{
+  "/api/gatekeeper-ec2": {
+    "target": "http://localhost:8000",
+    "secure": false
+  }
+}

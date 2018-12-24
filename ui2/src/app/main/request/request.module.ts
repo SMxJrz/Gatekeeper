@@ -4,10 +4,12 @@ import { NgModule } from '@angular/core';
 import { HttpClientModule } from '@angular/common/http';
 import { MatCardModule, MatToolbarModule, MatIconModule, MatButtonModule, MatButtonToggleModule } from '@angular/material';
 import { MatStepperModule } from '@angular/material';
-import { RequestComponent } from './request.component';
 
-import { ResourceComponent } from './resource/resource.component';
 import { FlexLayoutModule } from '@angular/flex-layout';
+import { AdSearchModule } from '@gk/ad-search/ad-search.module';
+import { ResourceComponent } from '@gk/resource/resource.component';
+import { RequestComponent } from '@gk/request.component';
+
 
 @NgModule({
   declarations: [
@@ -15,6 +17,7 @@ import { FlexLayoutModule } from '@angular/flex-layout';
     RequestComponent
   ],
   imports: [
+    AdSearchModule,
     BrowserModule,
     BrowserAnimationsModule,
     FlexLayoutModule,

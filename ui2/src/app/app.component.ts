@@ -4,7 +4,7 @@ import { MatIconRegistry } from '@angular/material';
 import { Router } from '@angular/router';
 
 @Component({
-  selector: 'app-root',
+  selector: 'gk-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })

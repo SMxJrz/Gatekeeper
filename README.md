@@ -1,6 +1,6 @@
 <img src="/img/logo.png" alt="drawing" width="500px"/>
 
-[![CircleCI](https://circleci.com/gh/FINRAOS/Gatekeeper/tree/master.svg?style=svg)](https://circleci.com/gh/FINRAOS/Gatekeeper/tree/master)
+[![CircleCI](https://circleci.com/gh/FINRAOS/Gatekeeper/tree/master.svg?style=svg)](https://circleci.com/gh/FINRAOS/Gatekeeper/tree/master) [![Join the chat at https://gitter.im/FINRAOS/Gatekeeper](https://badges.gitter.im/FINRAOS/Gatekeeper.svg)](https://gitter.im/FINRAOS/Gatekeeper?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 ## What is Gatekeeper?
 Gatekeeper is self-serviced web application allowing users to make requests for temporary access to EC2/RDS instances running in AWS and gain access instantly.
@@ -175,11 +175,39 @@ Currently Gatekeeper only supports authorization through LDAP, the application e
 #### AWS
 |Property | Description | Type |
 |---------|-------------|------|
-| gatekeeper.accountInfoEndpoint | The Endpoint gatekeeper calls to fetch the account data for all of your aws accounts | string
-| gatekeeper.accountInfoUri | The URI where gatekeeper can call your account Info service. (Defaults to "accounts") | string
 | gatekeeper.aws.proxyHost | (Optional) The Proxy Host. If you are not behind a proxy you can ignore this | string
 | gatekeeper.aws.proxyPort | (Optional) The Proxy Port. If you are not behind a proxy you can ignore this | integer
 | gatekeeper.aws.roleToAssume | The AWS IAM role that Gatekeeper will assume to interact with AWS (e.g. Xacnt_APP_GATEKEEPER)   | string 
+
+#### AWS ACCOUNTS
+These configurations are used by Gatekeeper to manage the data coming from your account service provider.
+
+|Property | Description | Type |
+|---------|-------------|------|
+| gatekeeper.account.serviceURL | The Endpoint gatekeeper calls to fetch the account data for all of your aws accounts | string
+| gatekeeper.account.serviceURI | The URI where gatekeeper can call your account Info service. (Defaults to "accounts") | string
+| gatekeeper.account.sdlcOverrides | A Map telling gatekeeper which account SDLC's to override. See the example below as to how this would look | Map<String, String>
+| gatekeeper.account.sdlcGrouping | A Map allowing you to control the ordering in which accounts show up in the UI based on SDLC, of not set there will be no ordering by SDLC. See Example for how this looks | Map<String, String>
+    
+##### SDLC Overrides
+You can override the SDLC of a given account by providing either it's name or AWS account id. This is useful if you want to have stricter or even looser approval requiremnts on a specific account in a given sdlc.
+
+```dotenv
+    gatekeeper.account.sdlcOverrides.poc=myacc1, 123456789
+    gatekeeper.account.sdlcOverrides.test=myacc2
+```    
+
+##### SDLC Grouping
+The dataset from the account service can get large over time, to control the sorting of these accounts in the UI you may (optionally) specify a grouping to group them up by SDLC. Gatekeeper will sort by the SDLC first and then the given Alias.
+If you do not provide a grouping then the groupings will ultimately default to 1 for all accounts, effectively not sorting on the grouping but the alias alone
+
+```dotenv
+    gatekeeper.account.sdlcGrouping.dev=1
+    gatekeeper.account.sdlcGrouping.qa=2
+    gatekeeper.account.sdlcGrouping.prod=3
+    gatekeeper.account.sdlcGrouping.poc=4
+    gatekeeper.account.sdlcGrouping.test=5
+```
 
 #### EMAIL
 Gatekeeper primarily communicates out temporary credentials via email, these are the properties gatekeeper requires for email
@@ -204,6 +232,13 @@ Gatekeeper primarily communicates out temporary credentials via email, these are
 | gatekeeper.db.sslCert | The SSL certificate location to use ( we provide the RDS cert in the container ) | string
 | gatekeeper.db.user | The DB user to log in as | string
 | gatekeeper.db.password | The DB user password | string
+
+#### JUSTIFICATION
+| Property | Description | Type|
+|----------|-------------|------|
+| gatekeeper.explanationFieldRequired | Whether to require an explanation when approval is required. | String
+| gatekeeper.ticketIdFieldRequired | Whether to require a ticket ID when approval is required. | String
+| gatekeeper.ticketIdFieldMessage | Placeholder message in the ticket ID field. Automatically appended with " (Optional)" if gatekeeper.ticketIdFieldRequired is set to false. | String
 
 ### EC2
 These configurations are specific to Gatekeeper EC2
@@ -300,6 +335,7 @@ The following are configuration properties which tell gatekeeper which documents
 
 | Property | Description | Type |
 |----------|-------------|------|
+| gatekeeper.ssmGrantRetryCount | ( Linux + Windows )The amount of times to retry any instances where creation failed (default is 3 tries) | integer
 | gatekeeper.ssm.linux.create.documentName | For Linux: The name of the SSM document Gatekeeper will call to create a user | string
 | gatekeeper.ssm.linux.create.timeout | For Linux: The Amount of time Gatekeeper should wait for the ssm create call to complete | integer
 | gatekeeper.ssm.linux.create.waitInterval | For Linux: The Interval that Gatekeeper polls the SSM create for completion | integer
@@ -319,7 +355,7 @@ These configurations are specific to Gatekeeper RDS
 | Property | Description | Type |
 |----------|-------------|------|
 | gatekeeper.db.schema | The schema in which gatekeeper operates its tables  | string
-| gatekeeper.requiredSecurityGroup | The Security Group in which Gatekeeper RDS requires for connectivity | string 
+| gatekeeper.requiredSecurityGroups | A comma separated list of the Security Group(s) in which Gatekeeper RDS requires for connectivity | string 
 | gatekeeper.rds.postgresMinServerVersion | The minimum postgrs server to use | string 
 | gatekeeper.rds.ssl | Whether Gatekeeeper-RDS should use SSL or not to connect | boolean
 | gatekeeper.rds.connectTimeout | The timeout (in milliseconds) to wait for a connection | Integer
@@ -334,6 +370,21 @@ These configurations are specific to Gatekeeper RDS
 | gatekeeper.auth.dbaGroupsPattern | A regular expression to extract group(s) of DBAS from ldap groups, requires one capture | string
 | gatekeeper.auth.opsGroupsPattern | A regular expression to extract group(s) of Ops Members from ldap groups. requires one capture | string
 | gatekeeper.auth.devGroupsPattern | A regular expression to extract group(s) of Dev Members from ldap groups. requires one capture | string
+
+### SNS
+Gatekeeper supports the publishing of Approval/Expiration events to an SNS topic, this can be useful if you have other applications that need to react to an event from the gatekeeper service. 
+
+Here's an example of how we are leveraging this feature from our AWS RE:Inforce 2019 session:
+
+<a href="https://www.youtube.com/watch?feature=player_embedded&v=d1V0RNJOFeE" target="_blank"><img src="http://img.youtube.com/vi/d1V0RNJOFeE/hqdefault.jpg" alt="Gatekeeper @ RE:INFORCE 2019" width="480" height="360" border="10" /></a>  
+
+| Property | Description | Type | 
+|----------|-------------|------|
+| gatekeeper.sns.topicARN | (required) The ARN of the SNS topic that you want gatekeeper to publish updates to. | string
+| gatekeeper.sns.retryCount | The number of times gatekeeper will re-try publishing to the given SNS topic  (Defaults to 5) | number
+| gatekeeper.sns.retryIntervalMillis | The time in milliseconds to wait before trying again (Defaults to 1000) | number
+| gatekeeper.sns.retryIntervalMultiplier | The multiplier in which gatekeeper will apply on subsequent retries (if this is set to 2 then gatekeeper will multiply the retry interval by 2 every time it fails up until the maximum retry count is reached) (Defaults to 1) | number
+
 
 #### APPROVALS
 

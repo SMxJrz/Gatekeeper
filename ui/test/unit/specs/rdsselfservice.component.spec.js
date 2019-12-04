@@ -16,6 +16,7 @@
  */
 import AccountDataService from '../../../app/component/shared/AccountDataService';
 import RdsGrantDataService from '../../../app/component/shared/RdsGrantDataService';
+import RdsConfigService from '../../../app/component/shared/RdsConfigService';
 
 //Controllers
 import md from 'angular-material';
@@ -40,7 +41,7 @@ describe('GateKeeper RDS SelfService component', function () {
 
     //mock all this stuff out.
     let $q, $rootScope, $httpBackend;
-    let gkAccountService, gkRdsGrantService;
+    let gkAccountService, gkRdsConfigService, gkRdsGrantService;
 
     describe('RdsSelfServiceController', function(){
         beforeEach(inject(function(_$q_, _$rootScope_, _$httpBackend_){
@@ -49,6 +50,7 @@ describe('GateKeeper RDS SelfService component', function () {
             $httpBackend = _$httpBackend_;
 
             gkRdsGrantService = new RdsGrantDataService($http, $state);
+            gkRdsConfigService = new RdsConfigService($http, $state);
             gkAccountService = new AccountDataService($http, $state);
 
         }));
@@ -64,9 +66,17 @@ describe('GateKeeper RDS SelfService component', function () {
                 userId:'testId',
                 user:'test',
                 email:'test@email.com',
-                memberships: {
-                    APP: ['DEV', 'QA'],
-                    APP2: ['DEV']
+                roleMemberships: {
+                    APP: {
+                        roles: {
+                            DEV: ['DEV', 'QA']
+                        }
+                    },
+                    APP2: {
+                        roles: {
+                            DEV: ['DEV']
+                        }
+                    }
                 }
             };
 
@@ -87,30 +97,34 @@ describe('GateKeeper RDS SelfService component', function () {
             };
 
             $rootScope.userInfo.approvalThreshold = {
-                datafix: {
-                    dev: 99,
-                    qa: 50,
-                    prod: 1
-                },
-                dba: {
-                    dev: 76,
-                    qa: 50,
-                    prod: 1
-                },
-                readonly: {
-                    dev: 65,
-                    qa: 50,
-                    prod: 1
-                },
-                readonly_confidential: {
-                    dev: 99,
-                    qa: 50,
-                    prod: 1
-                },
-                dba_confidential: {
-                    dev: 99,
-                    qa: 50,
-                    prod: 1
+                APP: {
+                    appApprovalThresholds: {
+                        DATAFIX: {
+                            dev: 99,
+                            qa: 50,
+                            prod: 1
+                        },
+                        DBA: {
+                            dev: 76,
+                            qa: 50,
+                            prod: 1
+                        },
+                        READONLY: {
+                            dev: 65,
+                            qa: 50,
+                            prod: 1
+                        },
+                        READONLY_CONFIDENTIAL: {
+                            dev: 99,
+                            qa: 50,
+                            prod: 1
+                        },
+                        DBA_CONFIDENTIAL: {
+                            dev: 99,
+                            qa: 50,
+                            prod: 1
+                        }
+                    }
                 }
             };
 
@@ -122,7 +136,7 @@ describe('GateKeeper RDS SelfService component', function () {
                 deferred.reject(resp);
             }
 
-            controller = new RdsSelfServiceController($mdDialog, $mdToast, gkAccountService, gkRdsGrantService, scope, $state, $rootScope);
+            controller = new RdsSelfServiceController($mdDialog, $mdToast, gkAccountService, gkRdsGrantService, gkRdsConfigService, scope, $state, $rootScope);
             controller.forms.awsInstanceForm = {
                 selectedAccount: {},
             };
@@ -212,7 +226,7 @@ describe('GateKeeper RDS SelfService component', function () {
             });
 
             it('should return maximum days if the user is an approver', () => {
-              $rootScope.userInfo.role = 'APPROVER';
+              $rootScope.userInfo.isApprover = true;
               let bound = controller.getApprovalBounds();
               expect(bound).toEqual(100);
             });
@@ -222,10 +236,7 @@ describe('GateKeeper RDS SelfService component', function () {
                 controller.selectedItems = [
                     {
                         application: 'APP'
-                    },
-                    {
-                        application: 'APP2'
-                    },
+                    }
                 ];
                 controller.forms.grantForm.selectedRoles = {
                     datafix: true,
@@ -251,23 +262,6 @@ describe('GateKeeper RDS SelfService component', function () {
                     },
                     {
                         application: 'APP3'
-                    },
-                ];
-                controller.forms.grantForm.selectedRoles = {
-                    readonly: true
-                };
-
-                let bound = controller.getApprovalBounds();
-                expect(bound).toEqual(-1);
-
-            });
-
-
-            it('should return -1 if the user is a does not have the correct SDLC membership', () => {
-                controller.forms.awsInstanceForm.selectedAccount.sdlc = 'prod';
-                controller.selectedItems = [
-                    {
-                        application: 'APP'
                     },
                 ];
                 controller.forms.grantForm.selectedRoles = {

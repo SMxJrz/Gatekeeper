@@ -17,7 +17,7 @@
 
 import md from 'angular-material';
 import table from 'angular-material-data-table';
-import Directive from './generic/BaseDirective'
+import Directive from './generic/BaseDirective';
 import ADDataService from './ADDataService';
 import AWSDataService from './AWSDataService';
 import RDSDataService from './RDSDataService';
@@ -29,7 +29,10 @@ import RdsGrantDataService from './RdsGrantDataService';
 import RoleDataService from './RoleDataService';
 import RequestDataService from './RequestDataService';
 import SchemaDataService from './SchemaDataService';
+import Ec2ConfigService from "./Ec2ConfigService";
+import RdsConfigService from "./RdsConfigService";
 import GkNavBar from './GkNavBar';
+import DisallowSpaces from './DisallowSpaces';
 import util from './generic/DirectiveUtils';
 
 import gkSSCtrl from './selfservice/GatekeeperSelfServiceController';
@@ -46,7 +49,10 @@ var gkUtil = angular.module('gatekeeper-util', [md, table])
     .service('gkAccountService', AccountDataService)
     .service('gkRequestService', RequestDataService)
     .service('gkSchemaService', SchemaDataService)
+    .service('gkEc2ConfigService', Ec2ConfigService)
+    .service('gkRdsConfigService', RdsConfigService)
     .controller('gkSelfServiceController', gkSSCtrl)
+    .directive('disallowSpaces', util.newDirective(new DisallowSpaces()))
     .directive('gatekeeperUserComponent',  util.newDirective(new Directive(require('./selfservice/template/gatekeeperADComponent.tpl.html'))))
     .directive('gkNavBar', util.newDirective(new GkNavBar(require('./template/gkNavBar.tpl.html'))));
 

@@ -67,24 +67,17 @@ public class PostgresDBConnection implements DBConnection {
         this.connectTimeout = postgres.getConnectTimeout();
     }
 
-    private PGPoolingDataSource connect(String url) throws SQLException{
-        logger.info("Getting connection for " + url);
-        logger.info("Creating Datasource connection for " + url);
-        PGPoolingDataSource dataSource = new PGPoolingDataSource();
-        String dbUrl = "jdbc:postgresql://" + url;
-
-        dataSource.setDataSourceName(url);
-        dataSource.setUrl(dbUrl);
-        dataSource.setUser(gkUserName);
-        dataSource.setPassword(gkUserPassword);
-        dataSource.setConnectTimeout(connectTimeout);
-        dataSource.setSsl(ssl);
-        dataSource.setSslMode(sslMode);
-        dataSource.setSslRootCert(sslCert);
-        //Do not want to keep the connection after execution
-
-        logger.info("Using the following properties with the connection: " + ssl );
-        return dataSource;
+    private PGPoolingDataSource connect(String url) throws SQLException {
+        String dbUrl = url.split("/")[0];
+        logger.info("Getting connection for " + dbUrl);
+        logger.info("Creating Datasource connection for " + dbUrl);
+        String pgUrl = dbUrl + "/postgres"; // url with postgres instead of whatever was on the AWS console
+        try {
+            return connectHelper(pgUrl); // Try postgres first since it is a default db.
+        } catch (Exception e){
+            logger.info("postgres database not present for " + dbUrl.split("/")[0] + " Attempting connection to " + url + " as fallback.");
+            return connectHelper(url); // Fall-back if postgres isn't there
+        }
     }
 
     public boolean grantAccess(String user, String password, RoleType role, String address, Integer length) throws SQLException {
@@ -97,10 +90,26 @@ public class PostgresDBConnection implements DBConnection {
             String expirationTime = LocalDateTime.now().plusDays(length).format(DateTimeFormatter.ofPattern(EXPIRATION_TIMESTAMP));
             String userWithSuffix = user + "_" + role.getShortSuffix();
             //Try to revoke the user
-            logger.info("Removing " + userWithSuffix + " from " + address + " if they exist.");
-            revokeUser(conn, userWithSuffix);
-            //Update the gk roles on the DB
-            createUser(conn, address, userWithSuffix, password, role, expirationTime);
+            boolean revoked = true;
+
+            // If the user already exists then we'll need to try to remove it, if they don't we'll just create the user.
+            if(userExists(conn, userWithSuffix)) {
+                logger.info("User " + userWithSuffix + " already exists, try to remove the user.");
+                try {
+                    // try to delete the user if they already are present
+                    revoked = revokeUser(conn, userWithSuffix);
+                } catch (Exception ex) {
+                    logger.error("Could not remove the existing user from the database. Falling back by trying to rotate the existing user's password", ex);
+                    revoked = false;
+                }
+            }
+            if(revoked) {
+                // Update the gk roles on the DB
+                createUser(conn, address, userWithSuffix, password, role, expirationTime);
+            }else{
+                // Rotate the password and expiration time for te existing user.
+                updateUser(conn, address, userWithSuffix, password, role, expirationTime);
+            }
             return true;
         }catch(Exception ex){
             logger.error("An exception was thrown while trying to grant access to user " + user + "_" + role.getShortSuffix() + " on address " + address , ex);
@@ -111,6 +120,13 @@ public class PostgresDBConnection implements DBConnection {
             }
         }
     }
+
+    private void updateUser(JdbcTemplate conn, String address, String user, String password, RoleType role, String expirationTime ) throws SQLException{
+        logger.info("Rotating the password for " + user + " on " + address + " with role " + role.getDbRole());
+        conn.execute("ALTER USER " + user + " PASSWORD '" + password + "' VALID UNTIL " + " '" + expirationTime + "'", new PostgresCallableStatementExecutor());
+        logger.info("Done Updating user " + user + " on " + address + " with role " + role.getDbRole());
+    }
+
     private void createUser(JdbcTemplate conn, String address, String user, String password, RoleType role, String expirationTime ) throws SQLException{
         logger.info("Creating user " + user + " on " + address + " with role " + role.getDbRole());
         conn.execute("CREATE USER " + user + " PASSWORD '" + password + "' VALID UNTIL " + " '" + expirationTime + "'", new PostgresCallableStatementExecutor());
@@ -189,13 +205,12 @@ public class PostgresDBConnection implements DBConnection {
             }
         }catch(SQLException e){
             logger.error("Error running check query", e);
-        }
-        catch(CannotGetJdbcConnectionException ex){
+        } catch(CannotGetJdbcConnectionException ex){
             logger.error("Failed to connect to DB", ex);
             if(ex.getMessage().contains("password")) {
                 issues.add("Password authentication failed for gatekeeper user");
             }else{
-                issues.add("Unable to connect to DB (Check network configuration)");
+                issues.add("Unable to connect to DB (" + ex.getCause().getMessage() + ")");
             }
         }finally{
             if(dataSource != null) {
@@ -203,8 +218,8 @@ public class PostgresDBConnection implements DBConnection {
             }
         }
 
-
         return issues;
+
     }
 
     /**
@@ -268,14 +283,45 @@ public class PostgresDBConnection implements DBConnection {
         } catch (Exception ex) {
             logger.error("Could not retrieve list of roles for database " + address, ex);
             throw ex;
+        }finally {
+            dataSource.close();
         }
-        dataSource.close();
         return results;
     }
 
-    private boolean revokeUser(JdbcTemplate conn, String user){
-        return conn.execute("DROP USER IF EXISTS " + user, new PostgresCallableStatementExecutor());
+    private PGPoolingDataSource connectHelper(String address) {
+        PGPoolingDataSource dataSource = new PGPoolingDataSource();
+        String dbUrl = "jdbc:postgresql://" + address;
 
+        dataSource.setDataSourceName(address);
+        dataSource.setUrl(dbUrl);
+        dataSource.setUser(gkUserName);
+        dataSource.setPassword(gkUserPassword);
+        dataSource.setConnectTimeout(connectTimeout);
+        dataSource.setSsl(ssl);
+        dataSource.setSslMode(sslMode);
+        dataSource.setSslRootCert(sslCert);
+        //Do not want to keep the connection after execution
+
+        try {
+            new JdbcTemplate(dataSource).queryForList("select 1"); // Tests the connection
+        } catch (Exception e) {
+            logger.error("Failed to connect to " + address);
+            dataSource.close(); // close the datasource
+            throw e;
+        }
+        logger.info("Using the following properties with the connection: " + ssl);
+        return dataSource;
+
+    }
+
+    private boolean userExists(JdbcTemplate conn, String user){
+        logger.info("Checking to see if user " + user + " exists");
+        return conn.queryForList("SELECT 1 FROM pg_roles WHERE rolname='" + user+"'").size() > 0;
+    }
+    private boolean revokeUser(JdbcTemplate conn, String user){
+        conn.execute("DROP USER IF EXISTS " + user, new PostgresCallableStatementExecutor());
+        return !userExists(conn, user);
     }
 
     private class PostgresCallableStatementExecutor implements CallableStatementCallback<Boolean> {

@@ -27,7 +27,6 @@ import org.activiti.engine.impl.persistence.entity.VariableInstance;
 import org.activiti.engine.runtime.ProcessInstanceQuery;
 import org.activiti.engine.task.Task;
 import org.activiti.engine.task.TaskQuery;
-import org.finra.gatekeeper.common.authfilter.parser.IGatekeeperUserProfile;
 import org.finra.gatekeeper.common.services.account.AccountInformationService;
 import org.finra.gatekeeper.common.services.account.model.Account;
 import org.finra.gatekeeper.common.services.account.model.Region;
@@ -41,9 +40,6 @@ import org.finra.gatekeeper.controllers.wrappers.CompletedAccessRequestWrapper;
 import org.finra.gatekeeper.exception.GatekeeperException;
 import org.finra.gatekeeper.services.accessrequest.model.*;
 import org.junit.Assert;
-import org.activiti.engine.HistoryService;
-import org.activiti.engine.RuntimeService;
-import org.activiti.engine.TaskService;
 import org.finra.gatekeeper.services.auth.GatekeeperRoleService;
 import org.junit.Before;
 import org.junit.Test;
@@ -52,7 +48,7 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.test.context.ActiveProfiles;
 
 import static org.mockito.Matchers.any;
@@ -91,9 +87,6 @@ public class AccessRequestServiceTest {
 
     @Mock
     private AccessRequest nonOwnerRequest;
-
-    @Mock
-    private AccessRequest adminRequest;
 
     @Mock
     private AWSInstance awsInstance;
@@ -160,7 +153,6 @@ public class AccessRequestServiceTest {
 
     private Date testDate;
 
-
     @Before
     public void initMocks() {
         testDate = new Date();
@@ -192,6 +184,8 @@ public class AccessRequestServiceTest {
         List<AWSInstance> instances = new ArrayList<>();
         when(awsInstance.getApplication()).thenReturn("TestApp");
         when(awsInstance.getInstanceId()).thenReturn("testId");
+//        when(awsInstance.getName()).thenReturn("testName");
+//        when(awsInstance.getIp()).thenReturn("1.2.3.4");
         when(awsInstance.getPlatform()).thenReturn("testPlatform");
         instances.add(awsInstance);
 
@@ -211,13 +205,14 @@ public class AccessRequestServiceTest {
         when(nonOwnerRequest.getRequestorId()).thenReturn("non-owner");
         when(nonOwnerRequest.getId()).thenReturn(2L);
         when(nonOwnerRequest.getPlatform()).thenReturn("testPlatform");
+//        when(nonOwnerRequest.getUsers()).thenReturn(Arrays.asList(new User().setId(1L).setUserId("user").setEmail("user@email").setName("username")));
+//
 
         Set<String> ownerMemberships = new HashSet<String>();
         ownerMemberships.add("TestApp");
 
         when(ownerRequestWrapper.getInstances()).thenReturn(instances);
         when(ownerRequestWrapper.getHours()).thenReturn(1);
-        when(ownerRequestWrapper.getRequestorId()).thenReturn("owner");
         when(ownerRequestWrapper.getAccount()).thenReturn("testAccount");
         when(ownerRequestWrapper.getRegion()).thenReturn("testRegion");
         when(ownerRequestWrapper.getPlatform()).thenReturn("testPlatform");
@@ -250,8 +245,8 @@ public class AccessRequestServiceTest {
         when(ownerOneTaskInstance.getTextValue2()).thenReturn("1");
         when(ownerTwoTaskInstance.getTextValue2()).thenReturn("2");
 
-        when(accessRequestRepository.findOne(1L)).thenReturn(ownerRequest);
-        when(accessRequestRepository.findOne(2L)).thenReturn(nonOwnerRequest);
+        when(accessRequestRepository.getAccessRequestById(1L)).thenReturn(ownerRequest);
+        when(accessRequestRepository.getAccessRequestById(2L)).thenReturn(nonOwnerRequest);
 
         when(runtimeService.getVariableInstance("ownerOneTask", "accessRequest")).thenReturn(ownerOneTaskInstance);
         when(runtimeService.getVariableInstance("ownerTwoTask", "accessRequest")).thenReturn(ownerTwoTaskInstance);
@@ -324,7 +319,7 @@ public class AccessRequestServiceTest {
         when(ssmService.checkInstancesWithSsm(any(),any())).thenReturn(statusMap);
 
         when(accountInformationService.getAccountByAlias(any())).thenReturn(mockAccount);
-        when(accessRequestRepository.findAll(Mockito.anyList())).thenReturn(Arrays.asList(ownerRequest, nonOwnerRequest));
+        when(accessRequestRepository.getAccessRequestsByIdIn(Mockito.anyCollection())).thenReturn(Arrays.asList(ownerRequest, nonOwnerRequest));
 
     }
 
@@ -624,7 +619,7 @@ public class AccessRequestServiceTest {
      */
     @Test
     public void testApproval(){
-        Mockito.when(accessRequestRepository.findOne(1L)).thenReturn(ownerRequest);
+        Mockito.when(accessRequestRepository.getAccessRequestById(1L)).thenReturn(ownerRequest);
         accessRequestService.approveRequest("taskOne", 1L, "A reason");
         Map<String,Object> statusMap = new HashMap<>();
         statusMap.put("requestStatus", RequestStatus.APPROVAL_GRANTED);
@@ -639,7 +634,7 @@ public class AccessRequestServiceTest {
      */
     @Test
     public void testRejected(){
-        Mockito.when(accessRequestRepository.findOne(1L)).thenReturn(nonOwnerRequest);
+        Mockito.when(accessRequestRepository.getAccessRequestById(1L)).thenReturn(nonOwnerRequest);
         accessRequestService.rejectRequest("taskOne", 1L, "Another Reason");
         Map<String,Object> statusMap = new HashMap<>();
         statusMap.put("requestStatus", RequestStatus.APPROVAL_REJECTED);

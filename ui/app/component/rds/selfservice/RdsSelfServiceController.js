@@ -18,18 +18,21 @@
 const DIALOG = Symbol();
 const TOAST = Symbol();
 const GRANT = Symbol();
+const CONFIG = Symbol();
 
 //need this to deal with callbacks
 let vm;
 
 import GatekeeperSelfServiceController from '../../shared/selfservice/GatekeeperSelfServiceController';
+import GatekeeperJustificationConfig from '../../shared/selfservice/model/GatekeeperJustificationConfig';
 
 class RdsSelfServiceController extends GatekeeperSelfServiceController {
-    constructor($mdDialog, $mdToast, gkADService, gkRdsGrantService,$scope,$state,$rootScope){
+    constructor($mdDialog, $mdToast, gkADService, gkRdsGrantService, gkRdsConfigService,$scope,$state,$rootScope){
         super($mdDialog, $mdToast, gkADService,$scope,$state,$rootScope);
 
         vm = this;
         this[GRANT] = gkRdsGrantService;
+        this[CONFIG] = gkRdsConfigService;
         this[TOAST] = $mdToast;
         this[DIALOG] = $mdDialog;
 
@@ -42,6 +45,15 @@ class RdsSelfServiceController extends GatekeeperSelfServiceController {
             ];
         vm.selectedItems = [];
         vm.rdsInstances = [];
+
+        this[CONFIG].fetch().then((response) =>{
+            let data = response.data;
+            vm.ticketIdFieldMessage = data.ticketIdFieldMessage;
+            vm.ticketIdFieldRequired = data.ticketIdFieldRequired;
+            vm.explanationFieldRequired = data.explanationFieldRequired;
+        }).catch((error)=>{
+            console.log('Error retrieving justification config: ' + error);
+        });
     }
 
 
@@ -81,31 +93,41 @@ class RdsSelfServiceController extends GatekeeperSelfServiceController {
     getApprovalBounds(){
 
         //approvers don't need approval
-        if(vm.global.userInfo.role.toLowerCase() === 'approver'){
+        if(vm.global.userInfo.isApprover){
             return vm.global.rdsMaxDays;
         }
 
         let approvalRequired = true;
         //first lets make sure they are members of what they are requesting for
         vm.selectedItems.forEach((item) => {
-            let resource = vm.global.userInfo.memberships[item.application];
-            approvalRequired = !resource || resource.indexOf(vm.forms.awsInstanceForm.selectedAccount.sdlc.toUpperCase()) === -1;
+            let resource = vm.global.userInfo.roleMemberships;
+            approvalRequired = !resource || !resource[item.application];
         });
 
         //if the user isn't part of what he is requesting for warn for approval.
-        if(approvalRequired){
+        if (approvalRequired) {
             return -1;
         }
 
         let values = [];
 
         angular.forEach(vm.forms.grantForm.selectedRoles, (v, k) => {
-            if(v){
-                values.push(vm.global.userInfo.approvalThreshold[k][vm.forms.awsInstanceForm.selectedAccount.sdlc.toLowerCase()]);
-            }
+            vm.selectedItems.forEach( (item) => {
+                if (v) {
+                    let appApprovalThreshold = vm.global.userInfo.approvalThreshold[item.application]['appApprovalThresholds'][k.toUpperCase()][vm.forms.awsInstanceForm.selectedAccount.sdlc.toLowerCase()];
+                    values.push(appApprovalThreshold);
+                }
+            });
         });
 
-        return  Math.min.apply(Math, values)
+        let approvalThreshold = Math.min.apply(Math, values);
+        let maxDays = this.getMaximumDays()
+
+        if(approvalThreshold <= maxDays) {
+            return approvalThreshold;
+        } else {
+            return maxDays;
+        }
 
     }
 
@@ -129,10 +151,15 @@ class RdsSelfServiceController extends GatekeeperSelfServiceController {
     getMaximumDays(){
         let thresholds = vm.global.rdsOverridePolicy;
         let max = vm.global.rdsMaxDays;
+        let overrideExists = false;
         if(vm.forms.awsInstanceForm && vm.forms.awsInstanceForm.selectedAccount) {
             vm.getSelectedRoles().forEach((role) => {
                 if(thresholds[role] && thresholds[role][vm.forms.awsInstanceForm.selectedAccount.sdlc]) {
                     let overrideVal = thresholds[role][vm.forms.awsInstanceForm.selectedAccount.sdlc];
+                    if(overrideExists === false) {
+                        overrideExists = true;
+                        max = overrideVal;
+                    }
                     if (overrideVal < max) {
                         max = overrideVal;
                     }
@@ -165,12 +192,12 @@ class RdsSelfServiceController extends GatekeeperSelfServiceController {
                 message += 'This request will require approval.'
             }
 
-            let config = {title:title, message:message, requiresExplanation: approvalRequired};
+            let config = {title:title, message:message, requiresExplanation: approvalRequired, justificationConfig:new GatekeeperJustificationConfig(vm.ticketIdFieldMessage, vm.ticketIdFieldRequired, vm.explanationFieldRequired)};
             vm.spawnTemplatedDialog(config)
-                .then((explanation) => {
+                .then((justification) => {
                     this.fetching.grant = true;
                     let roles = [];
-                    vm[GRANT].post(vm.getSelectedRoles(), vm.forms.grantForm.grantValue, vm.usersTable.selected, vm.forms.awsInstanceForm.selectedAccount.alias.toLowerCase(), vm.forms.awsInstanceForm.selectedAccount.sdlc.toLowerCase(), vm.forms.awsInstanceForm.selectedRegion.name, vm.selectedItems, explanation, vm.forms.awsInstanceForm.selectedPlatform)
+                    vm[GRANT].post(vm.getSelectedRoles(), vm.forms.grantForm.grantValue, vm.usersTable.selected, vm.forms.awsInstanceForm.selectedAccount.alias.toLowerCase(), vm.forms.awsInstanceForm.selectedAccount.sdlc.toLowerCase(), vm.forms.awsInstanceForm.selectedRegion.name, vm.selectedItems, justification.ticketId, justification.explanation, vm.forms.awsInstanceForm.selectedPlatform)
                         .then((response) => {
                             this.fetching.grant = false;
                             var msg;

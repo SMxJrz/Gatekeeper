@@ -86,10 +86,12 @@ jobs:
   build_base_docker:
     working_directory: /repo
     docker:
-      - image: docker:19.03.12-ce-git
+      - image: circleci/golang:1.15
     steps:
       - checkout
-      - setup_remote_docker
+      - setup_remote_docker:
+          version: 19.03.13
+          docker_layer_caching: true
       - run:
           name: Build Base Container
           command: |
@@ -107,10 +109,12 @@ jobs:
   build_java_docker:
     working_directory: /repo
     docker:
-      - image: docker:19.03.12-ce-git
+      - image: circleci/golang:1.15
     steps:
       - checkout
-      - setup_remote_docker
+      - setup_remote_docker:
+          version: 19.03.13
+          docker_layer_caching: true
       - restore_cache:
           keys:
             - gk_cntnr_base_v1-{{ .Branch }}
@@ -138,10 +142,12 @@ jobs:
   build_nginx_docker:
     working_directory: /repo
     docker:
-      - image: docker:19.03.12-ce-git
+      - image: circleci/golang:1.15
     steps:
       - checkout
-      - setup_remote_docker
+      - setup_remote_docker:
+          version: 19.03.13
+          docker_layer_caching: true
       - restore_cache:
           keys:
             - gk_cntnr_base_v1-{{ .Branch }}
@@ -169,10 +175,12 @@ jobs:
   build_and_push_ui:
     working_directory: ~/repo
     docker:
-      - image: docker:19.03.12-ce-git
+      - image: circleci/golang:1.15
     steps:
       - checkout
-      - setup_remote_docker
+      - setup_remote_docker:
+          version: 19.03.13
+          docker_layer_caching: true
       - restore_cache:
           keys:
             - gk_cntnr_nginx_v1-{{ .Branch }}
@@ -201,10 +209,12 @@ jobs:
   build_and_push_rds:
     working_directory: ~/repo
     docker:
-      - image: docker:19.03.12-ce-git
+      - image: circleci/golang:1.15
     steps:
       - checkout
-      - setup_remote_docker
+      - setup_remote_docker:
+          version: 19.03.13
+          docker_layer_caching: true
       - restore_cache:
           keys:
             - gk_cntnr_java_v1-{{ .Branch }}
@@ -232,10 +242,12 @@ jobs:
   build_and_push_ec2:
     working_directory: ~/repo
     docker:
-      - image: docker:19.03.12-ce-git
+      - image: circleci/golang:1.15
     steps:
       - checkout
-      - setup_remote_docker
+      - setup_remote_docker:
+          version: 19.03.13
+          docker_layer_caching: true
       - restore_cache:
           keys:
             - gk_cntnr_java_v1-{{ .Branch }}

@@ -2,7 +2,6 @@ var isProd = process.env.NODE_ENV.trim() === 'production';
 
 var webpack = require('webpack');
 var TerserPlugin = require("terser-webpack-plugin");
-var WebpackDevServer = require("webpack-dev-server");
 var HtmlWebpackPlugin = require("html-webpack-plugin");
 var path = require('path');
 var vendor = [
@@ -37,11 +36,6 @@ if (isProd) {
 module.exports = {
     mode: isProd ? 'production' : 'development',
     //for local dev against a backend
-    optimization:{
-        splitChunks: {
-            chunks: 'all'
-        }
-    },
     devServer: {
         proxy: {
             '/api/gatekeeper-ec2': {
@@ -64,8 +58,33 @@ module.exports = {
         filename: isProd ? '[name].[fullhash].js' : '[name].js'
     },
     optimization: {
+        splitChunks: {
+            name: false,
+            maxAsyncRequests: 30,
+            maxInitialRequests: 30,
+            cacheGroups: {
+                commons: {
+                    test: /[\\/]node_modules[\\/]/,
+                    name(module, chunks, cacheGroupKey) {
+                        const moduleFileName = module
+                            .identifier()
+                            .split('/')
+                            .reduceRight((item) => item);
+                        const allChunksNames = chunks.map((item) => item.name).join('~');
+                        return `${cacheGroupKey}-${allChunksNames}-${moduleFileName}`;
+                    },
+                    chunks: 'all'
+                }
+            }
+
+        },
         minimize: isProd,
-        minimizer: [new TerserPlugin()],
+        minimizer: [new TerserPlugin({
+            extractComments: false,
+            terserOptions: {
+                mangle: false
+            }
+        })],
     },
     performance: {
         hints: false
@@ -74,7 +93,7 @@ module.exports = {
     module: {
         rules: [
             {
-                test: /\.m?js$/,
+                test: /\.js$/,
                 exclude: /(node_modules|bower_components)/,
                 use: {
                     loader: 'babel-loader',
@@ -94,6 +113,10 @@ module.exports = {
             },
             {
                 test: /\.tpl\.html$/,
+                use: 'raw-loader'
+            },
+            {
+                test: /\.html$/,
                 use: 'raw-loader'
             },
             {

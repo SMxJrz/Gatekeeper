@@ -22,9 +22,7 @@ var commonsConfig = {
     filename: isProd ? '[name].[fullhash].js' : '[name].js'
 };
 
-var plugins = [
-
-];
+var plugins = []
 if (isProd) {
     plugins.splice(3, 0, new HtmlWebpackPlugin({
         hash: true,

@@ -21,7 +21,7 @@ import gkCtrl from './GatekeeperController';
 
 var gateKeeperModule = angular.module('gatekeeper', [md, gkUtil]);
 
-gateKeeperModule.controller('gkController', gkCtrl);
+gateKeeperModule.controller('gkController', ['$state', 'gkRoleService', '$scope', '$rootScope', '$stateParams', gkCtrl]);
 
 export default gateKeeperModule.name;
 

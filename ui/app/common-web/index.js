@@ -21,7 +21,7 @@ import list from "./list";
 
 import 'angular-material/angular-material.min.css';
 
-export default angular.module('gk-common-web', [banner, table, list]).config(($mdIconProvider)=>{
+export default angular.module('gk-common-web', [banner, table, list]).config(['$mdIconProvider', ($mdIconProvider)=>{
     $mdIconProvider
         .iconSet('action', require('./assets/action-icons.svg'), 24)
         .iconSet('alert', require('./assets/alert-icons.svg'), 24)
@@ -39,4 +39,4 @@ export default angular.module('gk-common-web', [banner, table, list]).config(($m
         .iconSet('places', require('./assets/places-icons.svg'), 24)
         .iconSet('social', require('./assets/social-icons.svg'), 24)
         .iconSet('toggle', require('./assets/toggle-icons.svg'), 24);
-}).name;
+}]).name;

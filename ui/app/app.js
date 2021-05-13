@@ -30,6 +30,6 @@ import commonWeb from './common-web';
 //import runMocked from '../test/app.run.mocked';
 //cause I have no idea how to get 'ngMockE2E' this new way.... ;)
 var module = angular.module('app', [md, state, gk, commonWeb, gkEc2, gkRds, select])
-    .config(Config);
+    .config(['$mdDateLocaleProvider', '$mdThemingProvider', '$stateProvider', '$urlRouterProvider', Config]);
 
 export default module;
